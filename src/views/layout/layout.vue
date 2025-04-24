@@ -8,7 +8,7 @@
         :width="240"
       >
         <img :src="logoUrl" style="width: 135px" />
-        <Menu></Menu>
+        <Menu v-if="menuMounted" :language-key="currentLang"></Menu>
       </a-layout-sider>
 
       <a-layout>
@@ -36,6 +36,24 @@
                     <FullscreenOutlined />
                   </template>
                 </a-button>
+              </a-col>
+              <a-col :span="2">
+                <a-dropdown>
+                  <a-button type="text">
+                    {{ currentLang === 'zh-CN' ? '中文' : 'English' }}
+                    <DownOutlined />
+                  </a-button>
+                  <template #overlay>
+                    <a-menu @click="changeLang">
+                      <a-menu-item key="zh-CN">
+                        中文
+                      </a-menu-item>
+                      <a-menu-item key="en-US">
+                        English
+                      </a-menu-item>
+                    </a-menu>
+                  </template>
+                </a-dropdown>
               </a-col>
               <a-col :span="3" :offset="17">
                 <a-dropdown>
@@ -108,9 +126,12 @@
     FullscreenExitOutlined,
     MenuUnfoldOutlined,
     MenuFoldOutlined,
+    DownOutlined,
   } from '@ant-design/icons-vue';
   import { useFullscreen } from '@vueuse/core';
-  import { ref } from 'vue';
+  import { ref, onMounted, watch, nextTick } from 'vue';
+  import { useI18n } from 'vue-i18n';
+  import { setI18nLanguage } from '@/lang';
 
   const logoUrl =
     localStorage.getItem('theme') === 'light'
@@ -126,6 +147,48 @@
   const collapsed = ref<boolean>(false);
 
   const { isFullscreen, toggle } = useFullscreen();
+
+  // 国际化相关
+  const i18n = useI18n();
+  const currentLang = ref(localStorage.getItem('language') || 'zh-CN');
+
+  // 添加一个标志来控制Menu组件的挂载
+  const menuMounted = ref(true);
+
+  // 直接使用导出的函数来更新语言设置，改进语言切换逻辑
+  const changeLang = async (e: { key: string }) => {
+    try {
+      const lang = e.key as 'zh-CN' | 'en-US';
+      // 卸载菜单组件以避免引用问题
+      menuMounted.value = false;
+      
+      // 更新语言
+      currentLang.value = lang;
+      setI18nLanguage(lang);
+      
+      // 等待DOM更新完成后再重新挂载菜单组件
+      await nextTick();
+      menuMounted.value = true;
+    } catch (error) {
+      console.error('语言切换出错:', error);
+      // 确保菜单组件始终被挂载
+      menuMounted.value = true;
+    }
+  };
+
+  // 监视locale变化，确保UI更新
+  watch(() => i18n.locale.value, (newLocale) => {
+    currentLang.value = newLocale as string;
+  });
+
+  // 页面加载时设置正确的语言
+  onMounted(() => {
+    const storedLang = localStorage.getItem('language');
+    if (storedLang) {
+      currentLang.value = storedLang;
+      setI18nLanguage(storedLang as 'zh-CN' | 'en-US');
+    }
+  });
 
   overrideHeaders();
 </script>

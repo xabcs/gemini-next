@@ -67,6 +67,10 @@
         <PaperClipOutlined />
         <span>{{ $t('menu.manage.auto') }}</span>
       </a-menu-item>
+      <a-menu-item key="/manager/domain">
+        <GlobalOutlined />
+        <span>{{ $t('menu.manage.domain') }}</span>
+      </a-menu-item>
       <a-menu-item key="/manager/board">
         <DotChartOutlined />
         <span>{{ $t('menu.manage.board') }}</span>
@@ -102,25 +106,80 @@
     PartitionOutlined,
     CrownOutlined,
     UserOutlined,
+    GlobalOutlined,
   } from '@ant-design/icons-vue';
   import { useStore } from '@/store';
-  import { ref } from 'vue';
+  import { ref, nextTick, onMounted, onBeforeUnmount } from 'vue';
   import router from '@/router';
+
+  defineProps({
+    languageKey: {
+      type: String,
+      default: ''
+    }
+  });
 
   const emit = defineEmits(['close']);
 
   const store = useStore();
 
-  const selectedKey = ref(store.state.menu.selectedKey);
-
-  const changeMenu = (vl: { keyPath: string[]; key: string }) => {
-    store.commit('menu/CHANGE_SELECTED', vl.keyPath);
-    if (vl.key === '/exist') {
-      sessionStorage.clear();
-      store.state.user.account.token = '';
+  const selectedKey = ref<string[]>([]);
+  
+  onMounted(() => {
+    const storeKeys = store.state.menu.selectedKey;
+    if (Array.isArray(storeKeys)) {
+      selectedKey.value = [...storeKeys];
+    } else if (storeKeys) {
+      selectedKey.value = [String(storeKeys)];
+    } else {
+      selectedKey.value = ['/home'];
     }
-    vl.key === '/exist'
-      ? router.push('/login')
-      : router.push(vl.key).finally(() => emit('close'));
+  });
+
+  onBeforeUnmount(() => {
+    selectedKey.value = [];
+  });
+
+  const changeMenu = async (vl: { keyPath: string[]; key: string }) => {
+    try {
+      if (Array.isArray(vl.keyPath)) {
+        store.commit('menu/CHANGE_SELECTED', [...vl.keyPath]);
+      } else if (vl.key) {
+        store.commit('menu/CHANGE_SELECTED', [vl.key]);
+      }
+      
+      if (vl.key === '/exist') {
+        try {
+          sessionStorage.clear();
+          store.commit('user/USER_STORE', { 
+            token: '',
+            real_name: '',
+            user: '',
+            is_record: 2
+          });
+        } catch (e) {
+          console.error('清除会话数据出错:', e);
+        }
+        
+        try {
+          await router.push('/login');
+        } catch (e) {
+          window.location.href = '/#/login';
+        }
+        return;
+      }
+      
+      try {
+        await router.push(vl.key);
+        await nextTick();
+      } catch (e) {
+        console.error('路由跳转出错:', e);
+      } finally {
+        emit('close');
+      }
+    } catch (error) {
+      console.error('菜单操作出错:', error);
+      emit('close');
+    }
   };
 </script>

@@ -3,7 +3,7 @@ import App from './App.vue';
 import routes from '@/router';
 import Antd from 'ant-design-vue';
 import { store, key } from '@/store/index';
-import i18n from '@/lang';
+import i18n, { setI18nLanguage } from '@/lang';
 import CTable from '@/components/table/index';
 import { extend } from 'dayjs';
 import weekday from 'dayjs/plugin/weekday';
@@ -22,6 +22,18 @@ if (localStorage.getItem('theme') === null) {
     import('@/style/light.less');
   }
 }
+
+// 初始化语言设置
+const initLanguage = () => {
+  const storedLang = localStorage.getItem('language');
+  if (storedLang) {
+    setI18nLanguage(storedLang as 'zh-CN' | 'en-US');
+  } else {
+    // 如果没有存储的语言设置，默认使用中文
+    setI18nLanguage('zh-CN');
+  }
+};
+initLanguage();
 
 createApp(App)
   .directive('watermark', (el, binding) => {

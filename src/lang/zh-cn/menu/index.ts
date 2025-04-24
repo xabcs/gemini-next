@@ -16,6 +16,7 @@ export default {
   'menu.manage.policy': '权限组',
   'menu.manage.rule': '审核规则',
   'menu.manage.auto': '自动任务',
+  'menu.manage.domain': '域名管理',
   'menu.manage.setting': '设置',
   'menu.loginout': '退出',
   'menu.comptroller.order': '工单审计',

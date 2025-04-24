@@ -14,7 +14,7 @@ const { t } = i18n.global;
 
 const ACCESS_TOKEN = sessionStorage.getItem('jwt');
 
-const COMMON_URI = '/api/v2';
+const COMMON_URI = '/api/v1';
 
 const request: AxiosInstance = axios.create({
   timeout: 200000,

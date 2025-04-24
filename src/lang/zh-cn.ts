@@ -10,6 +10,7 @@ import query from './zh-cn/query';
 import db from './zh-cn/db';
 import flow from './zh-cn/flow';
 import rule from './zh-cn/rule';
+import domain from './zh-cn/domain';
 
 const components = {
   antLocale: antdZhCN,
@@ -29,4 +30,5 @@ export default {
   ...db,
   ...flow,
   ...rule,
+  ...domain,
 };

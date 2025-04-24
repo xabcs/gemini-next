@@ -207,6 +207,14 @@ const router = createRouter({
               component: () => import('@/views/manager/autotask/autotask.vue'),
             },
             {
+              path: '/manager/domain',
+              name: 'manager/domain',
+              meta: {
+                title: 'Domain - 域名管理',
+              },
+              component: () => import('@/views/manager/domain/domain.vue'),
+            },
+            {
               path: '/manager/board',
               name: 'manager/board',
               meta: {
